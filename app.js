@@ -16,8 +16,35 @@ app.use("/test", (req, res)=>{
     res.send("Response, I love listening to you 1")
 });
 
+// Multiple route handlers
+app.use("/user", (req, res, next) =>{
+    //console.log("Response 1");
+    res.send("Response 1");
+    next();
+},
+(req,res)=>{
+    res.send("Response 2");
+},
+(req,res)=>{
+    res.send("Response 3");
+},
+(req,res)=>{
+    res.send("Response 4");
+},
+(req,res)=>{
+    res.send("Response 5");
+}
+);
+
 // use will match all the HTTP method API calls to /test
-app.get("/user", (req, res)=>{
+// app.get("/user", (req, res)=>{
+//     console.log(req.query);
+//     res.send({ firstName: "Akshay", lastName: "Saini"});
+// });
+
+// * means any character
+// $ means stop
+app.get("/*abc$", (req, res)=>{
     console.log(req.query);
     res.send({ firstName: "Akshay", lastName: "Saini"});
 });
