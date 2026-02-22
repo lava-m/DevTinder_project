@@ -4,16 +4,15 @@ import connectDB from './config/database.js';
 import User from './models/user.js';
 const app = express();
 
+// Adding middleware that converts data(json) sent by postman to JS object.
+app.use(express.json());
+
 // starting point of the application
 app.post("/signup", async (req,res)=>{
+  console.log(req.body);
  
   // creating a new instance of the User model
-  const user = new User({
-    firstName: "MS",
-    lastName: "Dhoni",
-    emailId: "Virat@gmail.com",
-    password: "12345",
-  });
+  const user = new User(req.body);
 
   try{
     await user.save();
@@ -23,8 +22,6 @@ app.post("/signup", async (req,res)=>{
   }
 
 });
-
-
 
 console.log("Starting a new project");
 
@@ -37,6 +34,6 @@ connectDB()
   })
   .catch((err)=>{
     console.log("Database cannot be connected!!");
-  });
+});
 
 
