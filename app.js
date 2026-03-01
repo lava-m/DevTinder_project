@@ -3,6 +3,7 @@ import express from "express";
 import connectDB from './config/database.js';
 import User from './models/user.js';
 import validateSignUpData from "./utils/validation.js";
+import bcrypt from "bcrypt";
 
 const app = express();
 
@@ -11,16 +12,22 @@ const app = express();
 app.use(express.json());
 
 
-
 // starting point of the application
 app.post("/signup", async (req,res)=>{
   console.log(req.body);
   try{
-  validateSignUpData(req);
- 
-  // creating a new instance of the User model
-  const user = new User(req.body);
+    // validation of data
+    validateSignUpData(req);
+    const {firstName, lastName, emailId, password} = req.body;
+   
 
+    // Encrypt the password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    console.log(passwordHash);
+    // creating a new instance of the User model
+    
+    const user = new User({firstName, lastName, emailId, password : passwordHash});
  
     await user.save();
     res.send("User added successfully")
@@ -111,9 +118,6 @@ app.patch("/user1/:userId", async(req,res) => {
   }
 
 } )
-
-
-
 
 console.log("Starting a new project");
 
