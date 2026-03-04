@@ -4,12 +4,16 @@ import connectDB from './config/database.js';
 import User from './models/user.js';
 import validateSignUpData from "./utils/validation.js";
 import bcrypt from "bcrypt";
+import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
 
 const app = express();
 
 
 // Adding middleware that converts data(json) sent by postman to JS object.
 app.use(express.json());
+// Adding middleware, parses it into a neat JavaScript object
+app.use(cookieParser());
 
 
 // starting point of the application
@@ -21,7 +25,7 @@ app.post("/signup", async (req,res)=>{
     const {firstName, lastName, emailId, password} = req.body;
    
 
-    // Encrypt the password
+    // Encrypt the password/
     const passwordHash = await bcrypt.hash(password, 10);
 
     console.log(passwordHash);
@@ -124,12 +128,76 @@ console.log("Starting a new project");
 connectDB()
   .then(()=>{
     console.log("Database connection established...");
-    app.listen(3000, () => {
-      console.log("Server running on port 3000");
+    app.listen(7777, () => {
+      console.log("Server running on port 7777");
     });
   })
   .catch((err)=>{
     console.log("Database cannot be connected!!");
 });
 
+// app.post("/login", async(req, res)=>{
+//    try{
+//       const {emailId, password} = req.body;
+
+//       const user = await User.findOne({emailId : emailId})
+//       if(user){
+//         console.log("User email exist")
+//       }else{
+//         console.log("User email does not exist")
+//       }
+
+//       const isPasswordValid = await bcrypt.compare(password, user.password);
+
+//       if(isPasswordValid){
+//         res.send("Login successful");
+//       }else{
+//         throw new Error("Password is not correct");
+//       }
+//    }catch(err){
+//     res.status(400).send("ERROR: " + err.message);
+//    }
+
+// })
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne({ emailId });
+    if (!user) {
+      throw new Error("Invalid credentials");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error("Invalid credentials");
+    }
+
+    const token = await jwt.sign({_id: user._id}, "DEV@Tinder$790");
+    console.log(token);
+
+    res.cookie("token", token);
+    res.send("Login successful");
+  } catch (err) {
+    res.status(400).send("ERROR: " + err.message);
+  }
+});
+
+
+app.get("/profile", async(req, res) => {
+  const cookies = req.cookies;
+  const {token} = cookies;
+  const decodedMessage = await jwt.verify(token, "DEV@Tinder$790");
+
+  const {_id} = decodedMessage;
+  console.log("Logged In User" + _id);
+  const user = await User.findById(_id);
+
+
+  console.log(cookies);
+  //res.send("Reading cookie");
+  res.send(user);
+});
 
