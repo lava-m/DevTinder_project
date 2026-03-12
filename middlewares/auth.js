@@ -25,7 +25,7 @@ import User from "../models/user.js";
         next();// move to the next handler
     }
     catch(err){
-          res.status(400).send("ERROR:"+ err.message);
+          res.status(400).send("ERROR 1:"+ err.message);
     }
 };
 
